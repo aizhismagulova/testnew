@@ -21,7 +21,7 @@ function load() {
 function blank() { return { transactions: [], budgets: {}, goals: [], currency: 'KZT' }; }
 function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-  catch (e) { alert('Не удалось сохранить данные: ' + e.message); }
+  catch (e) { /* хранилище недоступно — данные живут до закрытия страницы */ }
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
@@ -181,13 +181,22 @@ $('#goalForm').addEventListener('submit', e => {
   save(); e.target.reset(); render();
 });
 
+// Диалоги confirm() недоступны в веб-просмотре, поэтому подтверждаем вторым нажатием.
+function confirmClick(btn) {
+  if (btn.dataset.armed) return true;
+  btn.dataset.armed = '1'; btn.dataset.label = btn.textContent;
+  btn.textContent = 'Точно? Нажмите ещё раз';
+  setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = btn.dataset.label; } }, 3000);
+  return false;
+}
+
 document.addEventListener('click', e => {
   const d = e.target.dataset;
   if (d.delTx) { state.transactions = state.transactions.filter(t => t.id !== d.delTx); }
   else if (d.delBudget) { delete state.budgets[d.delBudget]; }
   else if (d.delGoal) {
     const g = state.goals.find(x => x.id === d.delGoal);
-    if (!confirm(`Удалить цель «${g.name}»? Отложенные ${money(g.saved)} вернутся в свободные деньги.`)) return;
+    if (!confirmClick(e.target)) return;
     state.goals = state.goals.filter(x => x.id !== d.delGoal);
   }
   else if (d.addGoal || d.subGoal) {
@@ -203,23 +212,29 @@ document.addEventListener('click', e => {
 
 $('#currency').onchange = e => { state.currency = e.target.value; save(); render(); };
 $('#exportBtn').onclick = () => {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }));
-  a.download = `finance-backup-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click(); URL.revokeObjectURL(a.href);
+  const t = $('#exportText');
+  t.value = JSON.stringify(state, null, 2); t.hidden = false; $('#copyBtn').hidden = false; t.select();
+};
+$('#copyBtn').onclick = async e => {
+  try { await navigator.clipboard.writeText($('#exportText').value); e.target.textContent = 'Скопировано ✓'; }
+  catch (err) { $('#exportText').select(); e.target.textContent = 'Выделено — скопируйте вручную'; }
 };
 $('#importFile').onchange = async e => {
   const file = e.target.files[0]; if (!file) return;
-  try {
-    const data = JSON.parse(await file.text());
-    if (!Array.isArray(data.transactions)) throw new Error('неверный формат');
-    if (!confirm('Заменить текущие данные данными из файла?')) return;
-    state = Object.assign(blank(), data); save(); render();
-  } catch (err) { alert('Не удалось прочитать файл: ' + err.message); }
-  e.target.value = '';
+  $('#importText').value = await file.text(); e.target.value = '';
 };
-$('#resetBtn').onclick = () => {
-  if (confirm('Удалить ВСЕ данные? Это нельзя отменить.')) { state = blank(); save(); render(); }
+$('#importBtn').onclick = e => {
+  let data;
+  try {
+    data = JSON.parse($('#importText').value);
+    if (!Array.isArray(data.transactions)) throw new Error('неверный формат');
+  } catch (err) { e.target.textContent = 'Ошибка: ' + err.message; setTimeout(() => { e.target.textContent = 'Восстановить'; }, 3000); return; }
+  if (!confirmClick(e.target)) return;
+  state = Object.assign(blank(), data); save(); $('#importText').value = ''; render();
+};
+$('#resetBtn').onclick = e => {
+  if (!confirmClick(e.target)) return;
+  state = blank(); save(); render();
 };
 
 /* ---------- Старт ---------- */

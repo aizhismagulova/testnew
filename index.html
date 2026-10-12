@@ -83,8 +83,14 @@
           <option value="EUR">€ Евро</option>
         </select>
       </label>
-      <button id="exportBtn">Скачать резервную копию</button>
-      <label class="file">Восстановить из копии <input id="importFile" type="file" accept="application/json"></label>
+      <button id="exportBtn">Показать резервную копию</button>
+      <textarea id="exportText" readonly hidden></textarea>
+      <button id="copyBtn" hidden>Скопировать</button>
+      <label>Восстановить из копии (вставьте текст или выберите файл)
+        <textarea id="importText" placeholder="Вставьте сюда текст резервной копии"></textarea>
+        <input id="importFile" type="file" accept="application/json">
+      </label>
+      <button id="importBtn">Восстановить</button>
       <button id="resetBtn" class="danger">Удалить все данные</button>
     </div>
     <p class="muted">Данные хранятся только в вашем браузере. Делайте резервные копии.</p>
