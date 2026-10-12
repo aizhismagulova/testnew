@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мои финансы</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <h1>💰 Мои финансы</h1>
+  <div class="month-nav">
+    <button id="prevMonth" aria-label="Предыдущий месяц">‹</button>
+    <span id="monthLabel"></span>
+    <button id="nextMonth" aria-label="Следующий месяц">›</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="overview" class="active">Обзор</button>
+  <button data-tab="transactions">Операции</button>
+  <button data-tab="budgets">Бюджеты</button>
+  <button data-tab="goals">Цели</button>
+  <button data-tab="settings">Данные</button>
+</nav>
+
+<main>
+  <section id="tab-overview" class="tab active">
+    <div class="cards">
+      <div class="card"><div class="label">Доходы</div><div class="value income" id="sumIncome"></div></div>
+      <div class="card"><div class="label">Расходы</div><div class="value expense" id="sumExpense"></div></div>
+      <div class="card"><div class="label">Итог месяца</div><div class="value" id="sumNet"></div></div>
+      <div class="card"><div class="label">Свободные деньги</div><div class="value" id="sumFree"></div><div class="hint" id="reservedHint"></div></div>
+    </div>
+    <h2>Расходы по категориям</h2>
+    <div id="categoryChart"></div>
+    <h2>Последние 6 месяцев</h2>
+    <div id="monthsChart" class="months"></div>
+  </section>
+
+  <section id="tab-transactions" class="tab">
+    <form id="txForm" class="form">
+      <div class="seg">
+        <label><input type="radio" name="type" value="expense" checked><span>Расход</span></label>
+        <label><input type="radio" name="type" value="income"><span>Доход</span></label>
+      </div>
+      <input name="amount" type="number" step="0.01" min="0.01" placeholder="Сумма" required>
+      <select name="category" required></select>
+      <input name="date" type="date" required>
+      <input name="note" type="text" placeholder="Заметка (необязательно)" maxlength="100">
+      <button class="primary" type="submit">Добавить</button>
+    </form>
+    <ul id="txList" class="list"></ul>
+  </section>
+
+  <section id="tab-budgets" class="tab">
+    <p class="muted">Установите месячный лимит на категорию — приложение покажет, сколько уже потрачено.</p>
+    <form id="budgetForm" class="form">
+      <select name="category" required></select>
+      <input name="limit" type="number" step="1" min="1" placeholder="Лимит в месяц" required>
+      <button class="primary" type="submit">Сохранить лимит</button>
+    </form>
+    <div id="budgetList"></div>
+  </section>
+
+  <section id="tab-goals" class="tab">
+    <form id="goalForm" class="form">
+      <input name="name" type="text" placeholder="Название цели (например, Отпуск)" required maxlength="60">
+      <input name="target" type="number" step="1" min="1" placeholder="Нужная сумма" required>
+      <input name="deadline" type="date" title="Срок (необязательно)">
+      <button class="primary" type="submit">Создать цель</button>
+    </form>
+    <div id="goalList"></div>
+  </section>
+
+  <section id="tab-settings" class="tab">
+    <div class="form">
+      <label>Валюта
+        <select id="currency">
+          <option value="KZT">₸ Тенге</option>
+          <option value="RUB">₽ Рубль</option>
+          <option value="USD">$ Доллар</option>
+          <option value="EUR">€ Евро</option>
+        </select>
+      </label>
+      <button id="exportBtn">Скачать резервную копию</button>
+      <label class="file">Восстановить из копии <input id="importFile" type="file" accept="application/json"></label>
+      <button id="resetBtn" class="danger">Удалить все данные</button>
+    </div>
+    <p class="muted">Данные хранятся только в вашем браузере. Делайте резервные копии.</p>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
